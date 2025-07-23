@@ -21,7 +21,7 @@ class Statetris extends StatelessWidget {
     this.onError,
   });
 
-  final Mode mode;
+  final StatetrisMode mode;
   final WidgetBuilder builder;
   final StateBuilder? onLoading;
   final StateBuilder? onError;
@@ -32,14 +32,14 @@ class Statetris extends StatelessWidget {
       duration: _duration,
       reverseDuration: _duration,
       child: switch (mode) {
-        Mode.loading =>
+        StatetrisMode.loading =>
           onLoading == null
               ? builder(context)
               : StatetrisLoading(
                   block: onLoading!(context),
                 ),
-        Mode.loaded => builder(context),
-        Mode.error =>
+        StatetrisMode.loaded => builder(context),
+        StatetrisMode.error =>
           onError == null
               ? builder(context)
               : StatetrisError(
@@ -172,4 +172,4 @@ class _StateBodyWidget extends StatelessWidget {
   }
 }
 
-enum Mode { loading, loaded, error }
+enum StatetrisMode { loading, loaded, error }
