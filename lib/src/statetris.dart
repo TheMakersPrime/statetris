@@ -17,14 +17,14 @@ class Statetris extends StatelessWidget {
     super.key,
     required this.mode,
     required this.builder,
-    required this.onLoading,
-    required this.onError,
+    this.onLoading,
+    this.onError,
   });
 
   final Mode mode;
   final WidgetBuilder builder;
-  final StateBuilder onLoading;
-  final StateBuilder onError;
+  final StateBuilder? onLoading;
+  final StateBuilder? onError;
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +32,19 @@ class Statetris extends StatelessWidget {
       duration: _duration,
       reverseDuration: _duration,
       child: switch (mode) {
-        Mode.loading => StatetrisLoading(block: onLoading(context)),
+        Mode.loading =>
+          onLoading == null
+              ? builder(context)
+              : StatetrisLoading(
+                  block: onLoading!(context),
+                ),
         Mode.loaded => builder(context),
-        Mode.error => StatetrisError(block: onError(context)),
+        Mode.error =>
+          onError == null
+              ? builder(context)
+              : StatetrisError(
+                  block: onError!(context),
+                ),
       },
     );
   }
