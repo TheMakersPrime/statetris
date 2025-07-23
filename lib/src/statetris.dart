@@ -1,6 +1,7 @@
 // Copyright (c) 2025 TheMakersPrime Authors. All rights reserved.
 
 import 'package:flutter/material.dart';
+import 'package:statetris/src/statetris_block.dart';
 
 const _duration = Duration(milliseconds: 300);
 const double _progressIndicatorHeight = 8;
@@ -9,61 +10,42 @@ const double _g16 = 16;
 const double _g4 = 4;
 const double _g2 = 2;
 
+typedef StateBuilder = StatetrisBlock Function(BuildContext);
+
 class Statetris extends StatelessWidget {
   const Statetris({
     super.key,
-    required WidgetBuilder this.builder,
-  }) : _mode = _Mode.loaded,
-       asset = null,
-       title = null,
-       subtitle = null,
-       action = null;
+    required this.mode,
+    required this.builder,
+    required this.onLoading,
+    required this.onError,
+  });
 
-  const Statetris.loading({
-    super.key,
-    this.asset,
-    this.title,
-    this.subtitle,
-  }) : _mode = _Mode.loading,
-       action = null,
-       builder = null;
-
-  const Statetris.error({
-    super.key,
-    this.asset,
-    this.title,
-    this.subtitle,
-    this.action,
-  }) : _mode = _Mode.error,
-       builder = null;
-
-  final Widget? asset;
-  final Widget? title;
-  final Widget? subtitle;
-  final Widget? action;
-  final WidgetBuilder? builder;
-  final _Mode _mode;
+  final Mode mode;
+  final WidgetBuilder builder;
+  final StateBuilder onLoading;
+  final StateBuilder onError;
 
   @override
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
       duration: _duration,
       reverseDuration: _duration,
-      child: switch (_mode) {
-        _Mode.loading => _LoadingWidget(asset: asset, title: title, subtitle: subtitle),
-        _Mode.loaded => builder!(context),
-        _Mode.error => _ErrorWidget(asset: asset, title: title, subtitle: subtitle, action: action),
+      child: switch (mode) {
+        Mode.loading => StatetrisLoading(block: onLoading(context)),
+        Mode.loaded => builder(context),
+        Mode.error => StatetrisError(block: onError(context)),
       },
     );
   }
 }
 
-class _LoadingWidget extends StatelessWidget {
-  const _LoadingWidget({required this.asset, required this.title, required this.subtitle});
+class StatetrisLoading extends StatelessWidget {
+  const StatetrisLoading({
+    required this.block,
+  });
 
-  final Widget? asset;
-  final Widget? title;
-  final Widget? subtitle;
+  final StatetrisBlock block;
 
   @override
   Widget build(BuildContext context) {
@@ -75,9 +57,9 @@ class _LoadingWidget extends StatelessWidget {
       ),
     );
 
-    final hasTitle = title != null;
-    final hasSubtitle = subtitle != null;
-    final hasAsset = asset != null;
+    final hasTitle = block.title != null;
+    final hasSubtitle = block.subtitle != null;
+    final hasAsset = block.asset != null;
 
     if (!hasTitle && !hasSubtitle && !hasAsset) {
       return _StateBodyWidget(
@@ -93,7 +75,7 @@ class _LoadingWidget extends StatelessWidget {
           if (hasAsset)
             Padding(
               padding: const EdgeInsets.only(bottom: _g24),
-              child: asset!,
+              child: block.asset!,
             ),
           progressIndicator,
           if (hasTitle)
@@ -101,13 +83,13 @@ class _LoadingWidget extends StatelessWidget {
               padding: const EdgeInsets.only(top: _g24),
               child: DefaultTextStyle(
                 style: textTheme.titleMedium!.copyWith(fontWeight: FontWeight.w600),
-                child: title!,
+                child: block.title!,
               ),
             ),
           if (hasSubtitle)
             Padding(
               padding: const EdgeInsets.only(top: _g4),
-              child: DefaultTextStyle(style: textTheme.bodyMedium!, child: subtitle!),
+              child: DefaultTextStyle(style: textTheme.bodyMedium!, child: block.subtitle!),
             ),
         ],
       ),
@@ -115,26 +97,25 @@ class _LoadingWidget extends StatelessWidget {
   }
 }
 
-class _ErrorWidget extends StatelessWidget {
-  const _ErrorWidget({required this.asset, required this.title, required this.subtitle, required this.action});
+class StatetrisError extends StatelessWidget {
+  const StatetrisError({
+    required this.block,
+  });
 
-  final Widget? asset;
-  final Widget? title;
-  final Widget? subtitle;
-  final Widget? action;
+  final StatetrisBlock block;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final titleWidget = DefaultTextStyle(
       style: textTheme.titleMedium!.copyWith(fontWeight: FontWeight.w600),
-      child: title ?? const Text('Error'),
+      child: block.title ?? const Text('Error'),
     );
 
-    final hasTitle = title != null;
-    final hasSubtitle = subtitle != null;
-    final hasAsset = asset != null;
-    final hasAction = action != null;
+    final hasTitle = block.title != null;
+    final hasSubtitle = block.subtitle != null;
+    final hasAsset = block.asset != null;
+    final hasAction = block.action != null;
 
     if (!hasTitle && !hasSubtitle && !hasAsset) {
       return _StateBodyWidget(
@@ -149,18 +130,18 @@ class _ErrorWidget extends StatelessWidget {
           if (hasAsset)
             Padding(
               padding: const EdgeInsets.only(bottom: _g24),
-              child: asset!,
+              child: block.asset!,
             ),
           titleWidget,
           if (hasSubtitle)
             Padding(
               padding: const EdgeInsets.only(top: _g4),
-              child: DefaultTextStyle(style: textTheme.bodyMedium!, child: subtitle!),
+              child: DefaultTextStyle(style: textTheme.bodyMedium!, child: block.subtitle!),
             ),
           if (hasAction)
             Padding(
               padding: const EdgeInsets.only(top: _g2),
-              child: action,
+              child: block.action,
             ),
         ],
       ),
@@ -181,4 +162,4 @@ class _StateBodyWidget extends StatelessWidget {
   }
 }
 
-enum _Mode { loading, loaded, error }
+enum Mode { loading, loaded, error }
