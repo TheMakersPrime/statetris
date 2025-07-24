@@ -1,30 +1,33 @@
 // Copyright (c) 2025 TheMakersPrime Authors. All rights reserved.
 
 import 'package:flutter/material.dart';
-import 'package:statetris/src/statetris_block.dart';
+import 'package:statetris/src/data/state_pod.dart';
+import 'package:statetris/src/widgets/statetris_error.dart';
+import 'package:statetris/src/widgets/statetris_loading.dart';
 
 const _duration = Duration(milliseconds: 300);
-const double _progressIndicatorHeight = 8;
-const double _g24 = 24;
-const double _g16 = 16;
-const double _g4 = 4;
-const double _g2 = 2;
 
-typedef StateBuilder = StatetrisBlock Function(BuildContext);
+typedef StateBuilder = StatePod Function(BuildContext);
 
 class Statetris extends StatelessWidget {
   const Statetris({
     super.key,
     required this.mode,
     required this.builder,
-    this.onLoading,
-    this.onError,
+    this.onLoadingStateBuilder,
+    this.onLoadingBuilder,
+    this.onErrorStateBuilder,
+    this.onErrorBuilder,
   });
 
   final StatetrisMode mode;
   final WidgetBuilder builder;
-  final StateBuilder? onLoading;
-  final StateBuilder? onError;
+
+  final StateBuilder? onLoadingStateBuilder;
+  final WidgetBuilder? onLoadingBuilder;
+
+  final StateBuilder? onErrorStateBuilder;
+  final WidgetBuilder? onErrorBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -33,141 +36,21 @@ class Statetris extends StatelessWidget {
       reverseDuration: _duration,
       child: switch (mode) {
         StatetrisMode.loading =>
-          onLoading == null
-              ? builder(context)
-              : StatetrisLoading(
-                  block: onLoading!(context),
-                ),
+          onLoadingBuilder?.call(context) ??
+              (onLoadingStateBuilder == null
+                  ? builder(context)
+                  : StatetrisLoading(
+                      block: onLoadingStateBuilder!(context),
+                    )),
         StatetrisMode.loaded => builder(context),
         StatetrisMode.error =>
-          onError == null
-              ? builder(context)
-              : StatetrisError(
-                  block: onError!(context),
-                ),
+          onErrorBuilder?.call(context) ??
+              (onErrorStateBuilder == null
+                  ? builder(context)
+                  : StatetrisError(
+                      block: onErrorStateBuilder!(context),
+                    )),
       },
-    );
-  }
-}
-
-class StatetrisLoading extends StatelessWidget {
-  const StatetrisLoading({
-    required this.block,
-  });
-
-  final StatetrisBlock block;
-
-  @override
-  Widget build(BuildContext context) {
-    final progressIndicator = SizedBox(
-      height: _progressIndicatorHeight,
-      width: _progressIndicatorHeight,
-      child: LinearProgressIndicator(
-        borderRadius: BorderRadius.circular(_progressIndicatorHeight / 2),
-      ),
-    );
-
-    final hasTitle = block.title != null;
-    final hasSubtitle = block.subtitle != null;
-    final hasAsset = block.asset != null;
-
-    if (!hasTitle && !hasSubtitle && !hasAsset) {
-      return _StateBodyWidget(
-        child: progressIndicator,
-      );
-    }
-
-    final textTheme = Theme.of(context).textTheme;
-    return _StateBodyWidget(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (hasAsset)
-            Padding(
-              padding: const EdgeInsets.only(bottom: _g24),
-              child: block.asset!,
-            ),
-          progressIndicator,
-          if (hasTitle)
-            Padding(
-              padding: const EdgeInsets.only(top: _g24),
-              child: DefaultTextStyle(
-                style: textTheme.titleMedium!.copyWith(fontWeight: FontWeight.w600),
-                child: block.title!,
-              ),
-            ),
-          if (hasSubtitle)
-            Padding(
-              padding: const EdgeInsets.only(top: _g4),
-              child: DefaultTextStyle(style: textTheme.bodyMedium!, child: block.subtitle!),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class StatetrisError extends StatelessWidget {
-  const StatetrisError({
-    required this.block,
-  });
-
-  final StatetrisBlock block;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final titleWidget = DefaultTextStyle(
-      style: textTheme.titleMedium!.copyWith(fontWeight: FontWeight.w600),
-      child: block.title ?? const Text('Error'),
-    );
-
-    final hasTitle = block.title != null;
-    final hasSubtitle = block.subtitle != null;
-    final hasAsset = block.asset != null;
-    final hasAction = block.action != null;
-
-    if (!hasTitle && !hasSubtitle && !hasAsset) {
-      return _StateBodyWidget(
-        child: titleWidget,
-      );
-    }
-
-    return _StateBodyWidget(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (hasAsset)
-            Padding(
-              padding: const EdgeInsets.only(bottom: _g24),
-              child: block.asset!,
-            ),
-          titleWidget,
-          if (hasSubtitle)
-            Padding(
-              padding: const EdgeInsets.only(top: _g4),
-              child: DefaultTextStyle(style: textTheme.bodyMedium!, child: block.subtitle!),
-            ),
-          if (hasAction)
-            Padding(
-              padding: const EdgeInsets.only(top: _g2),
-              child: block.action,
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StateBodyWidget extends StatelessWidget {
-  const _StateBodyWidget({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(padding: const EdgeInsets.all(_g16), child: child),
     );
   }
 }
