@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class StatetrisBlock {
-  const StatetrisBlock.loading({
+class StatePod {
+  const StatePod.loading({
     Widget? asset,
     Widget? title,
     Widget? subtitle,
@@ -10,7 +10,7 @@ class StatetrisBlock {
        _subtitle = subtitle,
        _action = null;
 
-  const StatetrisBlock.error({
+  const StatePod.error({
     Widget? asset,
     Widget? title,
     Widget? subtitle,
