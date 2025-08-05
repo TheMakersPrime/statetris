@@ -8,16 +8,18 @@ class StatetrisLoading extends StatelessWidget {
   const StatetrisLoading({
     required this.block,
     this.progressBarHeight = 8,
+    this.progressBarWidth = 200,
   });
 
   final StatePod block;
   final double progressBarHeight;
+  final double progressBarWidth;
 
   @override
   Widget build(BuildContext context) {
     final progressIndicator = SizedBox(
       height: progressBarHeight,
-      width: progressBarHeight,
+      width: progressBarWidth,
       child: LinearProgressIndicator(
         borderRadius: BorderRadius.circular(progressBarHeight / 2),
       ),
